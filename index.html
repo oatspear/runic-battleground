@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: MIT -->
+<!-- Copyright © 2023 André "Oatspear" Santos -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Secular+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+    <main id="app">
+      <!-- <battle-setup v-if="isSetupState" @character-selected="onSetupCharacterSelected">
+      </battle-setup> -->
+    </main>
+
+    <template id="vue-battle-setup">
+      <div class="slide">
+        <h2>Class</h2>
+        <p>Something or other here.</p>
+        <div class="action-bar">
+          <div class="center-container">
+            <button class="action-button" @click.prevent.stop="proceed()">
+              <img src="assets/confirm.png" alt="Ok" width="64" height="64">
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="vue-battle-header">
+      <header>
+        <div class="history">
+          <span class="title">Events:</span>
+          <battle-history-event v-for="event in history" :current-event="event">
+          </battle-history-event>
+        </div>
+      </header>
+    </template>
+
+    <template id="vue-battle-history-event">
+      <div class="slot">
+        <Transition name="slide-fade">
+          <div v-if="shouldDisplay" class="event" :class="{enemy: isHostile, friendly: isFriendly}">
+            <img class="icon" :src="`assets/${icon}.png`" alt="▼">
+          </div>
+        </Transition>
+      </div>
+    </template>
+
+    <template id="vue-battle-board">
+      <div id="board">
+        <div class="slides-container" id="slides-container">
+          <battle-scene
+            v-if="isBattleState"
+            :scene-index="0"
+            :player-id="playerId"
+            :enemies="enemies"
+            :players="players"
+            :highlight-enemies="highlightEnemies"
+            :highlight-players="highlightPlayers"
+            :selected-enemy="selectedEnemy"
+            :selected-player="selectedPlayer"
+            :acting-character="actingCharacter"
+            :compact="compact"
+            @selected-enemy="onEnemySelected"
+            @selected-player="onPlayerSelected"
+          >
+          </battle-scene>
+        </div>
+        <div v-if="globalAnimation" class="animation-container" :class="globalAnimation">
+          <div class="left-object"></div>
+          <div class="right-object"></div>
+        </div>
+      </div>
+    </template>
+
+    <template id="vue-battle-scene">
+      <div :id="`battle-scene-${sceneIndex}`" class="slide">
+        <div class="row">
+          <battle-character
+            v-for="(enemy, i) in enemies"
+            :tile-index="i"
+            :character="enemy"
+            :is-enemy
+            :is-active="selectedEnemy === i"
+            :is-highlighted="highlightEnemies && enemy.currentHealth > 0"
+            :is-acting="actingCharacter === enemy.id"
+            @selected="onEnemySelected"
+          >
+          </battle-character>
+        </div>
+        <div :class="compact ? 'column' : 'row'">
+          <battle-character
+            v-for="(player, i) in players"
+            :tile-index="i"
+            :character="player"
+            :is-enemy="false"
+            :is-active="selectedPlayer === i"
+            :is-highlighted="highlightPlayers && player.currentHealth > 0"
+            :is-acting="actingCharacter === player.id"
+            :is-owned="player.playerId === playerId"
+            @selected="onPlayerSelected"
+          >
+          </battle-character>
+        </div>
+      </div>
+    </template>
+
+    <template id="vue-battle-character">
+      <div class="tile-container">
+        <div
+          class="tile"
+          :class="{
+            active: isActive,
+            enemy: isEnemy,
+            acting: isActing,
+            owned: isOwned,
+            highlight: !isActive && isHighlighted,
+            animating: animation != '',
+            positive: animation == 'heal',
+            negative: animation == 'damage'
+          }"
+          @click="onTileClick"
+        >
+          <span class="class" :class="character.classData.id">{{ character.classData.name }}</span>
+          <div class="portrait" :class="{placeholder: character.hasUIData}">
+            <img :src="character.portrait" alt="?">
+          </div>
+          <div class="effect-anchor">
+            <div class="stunned" v-if="character.stunned > 0"></div>
+            <div class="shield" v-if="character.shield > 0"></div>
+            <div class="poison" v-if="character.poison > 0"></div>
+            <div class="healing" v-if="character.healing > 0"></div>
+            <div class="invulnerable" v-if="character.invulnerable > 0"></div>
+            <div class="armor-break" v-if="character.armorModifier > 0"></div>
+          </div>
+          <div class="stats">
+            <battle-icon-label name="power" :value="power" :size="16"></battle-icon-label>
+            <battle-icon-label name="health" :value="currentHealth" :max-value="health" :size="16"></battle-icon-label>
+          </div>
+          <Transition name="fade">
+            <div v-if="overlay.display" class="overlay">
+              <img v-if="overlay.icon" class="icon" :class="overlay.iconAnimation" :src="`assets/${overlay.icon}.png`" alt="?">
+              <div v-if="overlay.particles" class="particles" :class="overlay.particleAnimation">
+                <img class="icon" :src="`assets/${overlay.particles}.png`" alt="?">
+                <img class="icon" :src="`assets/${overlay.particles}.png`" alt="?">
+                <img class="icon" :src="`assets/${overlay.particles}.png`" alt="?">
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </template>
+
+    <template id="vue-battle-footer">
+      <footer>
+        <battle-action-bar
+          :observer="observer"
+          :selected-skill="selectedSkill"
+          :selected-target="selectedTarget"
+          :skills="skills"
+          @select-skill="onSkillSelected"
+          @cancel-skill="onCancelSkill"
+          @use-skill="onUseSkill"
+        >
+        </battle-action-bar>
+        <p class="description">
+          <span class="name">{{ itemName }}</span>
+          {{ itemDescription }}
+        </p>
+      </footer>
+    </template>
+
+    <template id="vue-battle-action-bar">
+      <div class="action-bar" v-if="observer">
+        <div class="animation-panel">
+
+        </div>
+      </div>
+      <div class="action-bar" v-else-if="selectedSkill == null">
+        <div class="center-container" v-for="(skill, i) in skills">
+          <button
+            class="action-button"
+            :disabled="skill.wait > 0"
+            @click.prevent.stop="selectSkill(i)"
+          >
+            <img :src="`assets/${skill.icon}.png`" alt="Skill" width="32" height="32">
+          </button>
+          <!-- <div class="speed">
+            {{ skill.speed }}
+          </div> -->
+          <div class="cooldown" v-if="skill.cooldown > 0">
+            {{ skill.wait || skill.cooldown }}
+          </div>
+        </div>
+      </div>
+      <div class="action-bar" v-else>
+        <div class="center-container">
+          <button class="action-button" @click.prevent.stop="cancelSkill()">
+            <img src="assets/cancel.png" alt="Cancel" width="32" height="32">
+          </button>
+        </div>
+        <div class="center-container">
+          <button
+            class="action-button active"
+            :disabled="selectedTarget == null"
+            @click.prevent.stop="useSkill()"
+          >
+            <img :src="`assets/${skills[selectedSkill].icon}.png`" alt="Skill" width="32" height="32">
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <template id="vue-battle-icon-label">
+      <div class="icon-label" :class="name">
+        <img :src="`assets/${name}.png`" alt="Icon" :width="size" :height="size">
+        <span class="label" :class="{'text-red': isBelowMax}">{{ value }}</span>
+      </div>
+    </template>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/rune-games-sdk@4/multiplayer.js"></script> -->
+    <script src="rune-mock.js"></script>
+    <script src="logic.js"></script>
+    <!-- <script src="data.js"></script> -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- <script src="components/battle.js"></script> -->
+    <!-- <script src="client.js"></script> -->
+  </body>
+</html>
