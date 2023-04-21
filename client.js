@@ -3,8 +3,17 @@
 
 const { createApp } = Vue;
 
-
 const DEFAULT_ANIM_DURATION = 1000;
+
+
+function newEnum(keys) {
+  const enumObject = {};
+  for (let i = 0; i < keys.length; ++i) {
+    enumObject[keys[i]] = i;
+  }
+  return Object.freeze(enumObject);
+}
+
 
 const UIState = newEnum([
   "INIT",
@@ -128,10 +137,10 @@ const app = createApp({
   methods: {
     onSetupDone(game, playerId, players) {
       // assert(this.ui.state === UIState.INIT, `UI state: ${this.ui.state}`);
-      this.ui.playerData = players;
+      // this.ui.playerData = players;
       this.setGameState(game, playerId);
-      this.ui.globalAnimation = "anim-battle-start";
-      window.setTimeout(() => { this.setActionUIState(); }, 2000);
+      // this.ui.globalAnimation = "anim-battle-start";
+      // window.setTimeout(() => { this.setActionUIState(); }, 2000);
       // this.enterChooseCharacterUIState();
     },
 
@@ -148,13 +157,13 @@ const app = createApp({
     setGameState(game, playerId) {
       // Hard reset of the current game state
       console.log("setGameState()");
-      this.playerId = playerId;
-      this.ui.state = "battle";
-      this.enemies = [newClientEnemy(game.enemy, 0)];
-      this.setPlayerStates(game.players);
-      this.resetCharacterMap();
-      this.currentTurn = game.currentTurn;
-      this.eventQueue = game.events;
+      // this.playerId = playerId;
+      // this.ui.state = "battle";
+      // this.enemies = [newClientEnemy(game.enemy, 0)];
+      // this.setPlayerStates(game.players);
+      // this.resetCharacterMap();
+      // this.currentTurn = game.currentTurn;
+      // this.eventQueue = game.events;
     },
 
     setPlayerStates(players) {
@@ -335,7 +344,8 @@ const app = createApp({
   }
 });
 
-app.component("BattleSetup", BattleSetup);
+app.component("BattleZone", BattleZone);
+app.component("BattleArmySlot", BattleArmySlot);
 
 app.mount("#app");
 

@@ -169,14 +169,14 @@ Rune.initLogic({
     };
 
     for (const playerId of players) {
-      const player = newPlayerCharacter(playerId, game.players.length);
-      const classData = game.availableHeroes.pop();
-      Object.assign(player, classData);
-      player.currentHealth = player.health;
+      const player = {};
+      // const classData = game.availableHeroes.pop();
+      // Object.assign(player, classData);
+      // player.currentHealth = player.health;
       game.players.push(player);
     }
 
-    enterBattleState(game);
+    // enterBattleState(game);
 
     return game;
   },

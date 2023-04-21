@@ -15,9 +15,43 @@
   </head>
   <body>
     <main id="app">
-      <!-- <battle-setup v-if="isSetupState" @character-selected="onSetupCharacterSelected">
-      </battle-setup> -->
+      <div class="board">
+        <battle-zone></battle-zone>
+        <battle-zone></battle-zone>
+        <battle-zone></battle-zone>
+      </div>
     </main>
+
+    <template id="vue-battle-zone">
+      <div class="zone">
+        <div class="enemy army">
+          <div class="spacer"></div>
+          <div class="row">
+            <battle-army-slot></battle-army-slot>
+            <battle-army-slot></battle-army-slot>
+          </div>
+          <div class="row">
+            <battle-army-slot></battle-army-slot>
+            <battle-army-slot></battle-army-slot>
+          </div>
+        </div>
+        <div class="location"></div>
+        <div class="player army">
+          <div class="row">
+            <battle-army-slot></battle-army-slot>
+            <battle-army-slot></battle-army-slot>
+          </div>
+          <div class="row">
+            <battle-army-slot></battle-army-slot>
+            <battle-army-slot></battle-army-slot>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="vue-battle-army-slot">
+      <div class="slot"></div>
+    </template>
 
     <template id="vue-battle-setup">
       <div class="slide">
@@ -230,7 +264,7 @@
     <script src="logic.js"></script>
     <!-- <script src="data.js"></script> -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <!-- <script src="components/battle.js"></script> -->
-    <!-- <script src="client.js"></script> -->
+    <script src="components/battle.js"></script>
+    <script src="client.js"></script>
   </body>
 </html>
